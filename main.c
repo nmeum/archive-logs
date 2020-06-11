@@ -90,6 +90,7 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
 			return -1;
 	} else {
+		/* Emulate O_APPEND by seeking to end of file */
 		if (lseek(outfd, 0, SEEK_END) == -1)
 			return -1;
 	}
