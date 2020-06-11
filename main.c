@@ -78,6 +78,7 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	int infd, outfd;
 	ssize_t count;
 
+	/* Calculate amount of bytes to archive */
 	if ((count = getcount(instream)) == -1)
 		return -1;
 
