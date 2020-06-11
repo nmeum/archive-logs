@@ -79,28 +79,28 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	ssize_t count;
 
 	if ((count = getcount(instream)) == -1)
-		err(EXIT_FAILURE, "getcount failed");
+		return -1;
 
 	/* Can't use O_APPEND as it is not supported by sendfile */
 	outfd = openat(archive, fn, O_WRONLY);
 	if (outfd == -1) {
 		if (errno != ENOENT)
-			err(EXIT_FAILURE, "openat failed");
+			return -1;
 
 		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
-			err(EXIT_FAILURE, "openat failed");
+			return -1;
 	} else {
 		if (lseek(outfd, 0, SEEK_END) == -1)
-			err(EXIT_FAILURE, "lseek failed");
+			return -1;
 	}
 
 	rewind(instream);
 	infd = fileno(instream);
 
 	if (sendfile(outfd, infd, NULL, count) == -1)
-		err(EXIT_FAILURE, "sendfile failed");
+		return -1;
 	if (rtruncate(infd, fn, st, count) == -1)
-		err(EXIT_FAILURE, "rtruncate failed");
+		return -1;
 
 	fclose(instream);
 	close(outfd);
