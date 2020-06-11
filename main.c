@@ -22,16 +22,11 @@ enum {
 };
 
 static ssize_t
-getcount(const char *fp)
+getcount(FILE *stream)
 {
 	int ch;
-	FILE *stream;
 	ssize_t count;
 	size_t lines;
-
-	count = -1;
-	if (!(stream = fopen(fp, "r")))
-		goto ret0;
 
 	lines = 0;
 	while ((ch = getc(stream)) != EOF)
@@ -46,18 +41,14 @@ getcount(const char *fp)
 	while (lines > 0) {
 		ch = getc(stream);
 		if (ch == EOF) {
-			count = -1;
 			errno = EBADFD;
-			goto ret1;
+			return -1;
 		} else if (ch == '\n') {
 			lines--;
 		}
 		count++;
 	}
 
-ret1:
-	fclose(stream);
-ret0:
 	return count;
 }
 
@@ -82,10 +73,45 @@ rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
 }
 
 static int
-walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
+arfile(FILE *instream, const char *fn, const struct stat *st)
 {
 	int infd, outfd;
 	ssize_t count;
+
+	if ((count = getcount(instream)) == -1)
+		err(EXIT_FAILURE, "getcount failed");
+
+	/* Can't use O_APPEND as it is not supported by sendfile */
+	outfd = openat(archive, fn, O_WRONLY);
+	if (outfd == -1) {
+		if (errno != ENOENT)
+			err(EXIT_FAILURE, "openat failed");
+
+		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
+			err(EXIT_FAILURE, "openat failed");
+	} else {
+		if (lseek(outfd, 0, SEEK_END) == -1)
+			err(EXIT_FAILURE, "lseek failed");
+	}
+
+	rewind(instream);
+	infd = fileno(instream);
+
+	if (sendfile(outfd, infd, NULL, count) == -1)
+		err(EXIT_FAILURE, "sendfile failed");
+	if (rtruncate(infd, fn, st, count) == -1)
+		err(EXIT_FAILURE, "rtruncate failed");
+
+	fclose(instream);
+	close(outfd);
+
+	return 0;
+}
+
+static int
+walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
+{
+	FILE *stream;
 	const char *fn;
 
 	(void)ftw;
@@ -95,38 +121,17 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	if (!(flags & FTW_F))
 		return 0;
 
-	if ((count = getcount(fp)) == -1)
-		err(EXIT_FAILURE, "getcount failed");
-
 	/* Convert potentially absolute path to relative path */
 	assert(strlen(fp) > strlen(basefp));
 	fn = fp + strlen(basefp);
 	if (*fn == '/')
 		fn++;
 
-	if ((infd = open(fp, O_RDWR)) == -1)
-		err(EXIT_FAILURE, "open failed");
+	if (!(stream = fopen(fp, "r+")))
+		err(EXIT_FAILURE, "fopen failed");
+	if (arfile(stream, fn, st) == -1)
+		err(EXIT_FAILURE, "archive failed");
 
-	/* Can't use O_APPEND as it is not supported by sendfile */
-	outfd = openat(archive, fn, O_WRONLY);
-	if (outfd == -1) {
-		if (errno != ENOENT)
-			errx(EXIT_FAILURE, "openat failed");
-
-		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
-			err(EXIT_FAILURE, "openat failed");
-	} else {
-		if (lseek(outfd, 0, SEEK_END) == -1)
-			err(EXIT_FAILURE, "lseek failed");
-	}
-
-	if (sendfile(outfd, infd, NULL, count) == -1)
-		err(EXIT_FAILURE, "sendfile failed");
-	if (rtruncate(infd, fn, st, count) == -1)
-		err(EXIT_FAILURE, "rtruncate failed");
-
-	close(infd);
-	close(outfd);
 	return 0;
 }
 
