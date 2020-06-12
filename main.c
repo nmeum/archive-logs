@@ -104,9 +104,7 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	if (rtruncate(infd, fn, st, count) == -1)
 		return -1;
 
-	fclose(instream);
 	close(outfd);
-
 	return 0;
 }
 
@@ -134,6 +132,8 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	if (arfile(stream, fn, st) == -1)
 		err(EXIT_FAILURE, "archive failed");
 
+	if (fclose(stream))
+		errx(EXIT_FAILURE, "fclose failed");
 	return 0;
 }
 
