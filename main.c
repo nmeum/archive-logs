@@ -75,37 +75,42 @@ rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
 static int
 arfile(FILE *instream, const char *fn, const struct stat *st)
 {
-	int infd, outfd;
+	int r, infd, outfd;
 	ssize_t count;
+
+	r = -1;
 
 	/* Calculate amount of bytes to archive */
 	if ((count = getcount(instream)) == -1)
-		return -1;
+		goto ret0;
 
 	/* Can't use O_APPEND as it is not supported by sendfile */
 	outfd = openat(archive, fn, O_WRONLY);
 	if (outfd == -1) {
 		if (errno != ENOENT)
-			return -1;
+			goto ret0;
 
 		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
-			return -1;
+			goto ret0;
 	} else {
 		/* Emulate O_APPEND by seeking to end of file */
 		if (lseek(outfd, 0, SEEK_END) == -1)
-			return -1;
+			goto ret1;
 	}
 
 	rewind(instream);
 	infd = fileno(instream);
 
 	if (sendfile(outfd, infd, NULL, count) == -1)
-		return -1;
+		goto ret1;
 	if (rtruncate(infd, fn, st, count) == -1)
-		return -1;
+		goto ret1;
 
+	r = 0;
+ret1:
 	close(outfd);
-	return 0;
+ret0:
+	return r;
 }
 
 static int
