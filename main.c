@@ -56,20 +56,25 @@ static int
 rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
 {
 	char *tempfn;
-	int tempfd;
+	int r, tempfd;
+
+	r = -1;
 
 	tempfn = ".tmp";
 	tempfd = openat(current, tempfn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode);
 	if (tempfd == -1)
-		return -1;
+		goto ret0;
 
 	if (sendfile(tempfd, fd, &offset, st->st_size - offset) == -1)
-		return -1;
+		goto ret1;
 	if (renameat(current, tempfn, current, fn) == -1)
-		return -1;
+		goto ret1;
 
+	r = 0;
+ret1:
 	close(tempfd);
-	return 0;
+ret0:
+	return r;
 }
 
 static int
