@@ -80,6 +80,7 @@ ret0:
 static int
 arfile(FILE *instream, const char *fn, const struct stat *st)
 {
+	off_t off;
 	int r, infd, outfd;
 	ssize_t count;
 
@@ -103,10 +104,9 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 			goto ret1;
 	}
 
-	rewind(instream);
+	off = 0;
 	infd = fileno(instream);
-
-	if (sendfile(outfd, infd, NULL, count) == -1)
+	if (sendfile(outfd, infd, &off, count) == -1)
 		goto ret1;
 	if (rtruncate(infd, fn, st, count) == -1)
 		goto ret1;
