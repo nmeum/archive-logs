@@ -128,7 +128,7 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 
 	if (!strcmp(fp, "."))
 		return 0;
-	if (!(flags & FTW_F))
+	if (flags != FTW_F)
 		return 0;
 
 	/* Convert potentially absolute path to relative path */
