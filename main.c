@@ -93,19 +93,12 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	if ((count = getcount(instream)) == -1)
 		goto ret0;
 
-	/* Can't use O_APPEND as it is not supported by sendfile */
-	outfd = openat(archive, fn, O_WRONLY);
-	if (outfd == -1) {
-		if (errno != ENOENT)
-			goto ret0;
-
-		if ((outfd = openat(archive, fn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode)) == -1)
-			goto ret0;
-	} else {
-		/* Emulate O_APPEND by seeking to end of file */
-		if (lseek(outfd, 0, SEEK_END) == -1)
-			goto ret1;
-	}
+	/* Can't use O_APPEND as it is not supported by sendfile, we
+	 * "emulate" it by seeking to the end of file after openat. */
+	if ((outfd = openat(archive, fn, O_CREAT|O_WRONLY, st->st_mode)) == -1)
+		goto ret0;
+	if (lseek(outfd, 0, SEEK_END) == -1)
+		goto ret1;
 
 	off = 0;
 	infd = fileno(instream);
