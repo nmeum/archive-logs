@@ -67,7 +67,7 @@ rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
 
 	if (sendfile(tempfd, fd, &offset, st->st_size - offset) == -1)
 		goto ret2;
-	if (rename(tempfn, fn))
+	if (renameat(AT_FDCWD, tempfn, current, fn))
 		goto ret2;
 
 	r = 0;
