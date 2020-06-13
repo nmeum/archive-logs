@@ -55,22 +55,25 @@ getcount(FILE *stream)
 static int
 rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
 {
-	char *tempfn;
+	char tempfn[] = ".archive-logsXXXXXX";
 	int r, tempfd;
 
 	r = -1;
 
-	tempfn = ".tmp";
-	tempfd = openat(current, tempfn, O_EXCL|O_CREAT|O_WRONLY, st->st_mode);
-	if (tempfd == -1)
+	if ((tempfd = mkstemp(tempfn)) == -1)
 		goto ret0;
+	if (fchmod(tempfd, st->st_mode))
+		goto ret2;
 
 	if (sendfile(tempfd, fd, &offset, st->st_size - offset) == -1)
-		goto ret1;
-	if (renameat(current, tempfn, current, fn) == -1)
-		goto ret1;
+		goto ret2;
+	if (rename(tempfn, fn))
+		goto ret2;
 
 	r = 0;
+	goto ret1;
+ret2:
+	remove(tempfn);
 ret1:
 	close(tempfd);
 ret0:
@@ -121,6 +124,7 @@ ret0:
 static int
 walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 {
+	int fd;
 	FILE *stream;
 	const char *fn;
 
@@ -137,8 +141,10 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	if (*fn == '/')
 		fn++;
 
-	if (!(stream = fopen(fp, "r+")))
-		err(EXIT_FAILURE, "fopen failed");
+	if ((fd = openat(current, fn, O_RDWR)) == -1)
+		err(EXIT_FAILURE, "openat failed");
+	if (!(stream = fdopen(fd, "r+")))
+		err(EXIT_FAILURE, "fdopen failed");
 	if (arfile(stream, fn, st) == -1)
 		err(EXIT_FAILURE, "archive failed");
 
@@ -161,7 +167,7 @@ main(int argc, char **argv)
 		err(EXIT_FAILURE, "couldn't open archive");
 
 	basefp = argv[1];
-	if (nftw(basefp, walkfn, MAXFD, FTW_PHYS))
+	if (nftw(basefp, walkfn, MAXFD, FTW_PHYS|FTW_CHDIR))
 		errx(EXIT_FAILURE, "nftw failed");
 
 	close(current);
