@@ -133,7 +133,7 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	if (flags != FTW_F)
 		return 0;
 
-	/* Convert potentially absolute path to relative path */
+	/* Convert potentially absolute path to a path relative to basefp */
 	assert(strlen(fp) > strlen(basefp));
 	fn = fp + strlen(basefp);
 	if (*fn == '/')
