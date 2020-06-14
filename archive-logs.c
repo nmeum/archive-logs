@@ -32,6 +32,25 @@ enum {
 	MAXFD = 256,
 };
 
+static int
+sendfileall(int out, int in, off_t *offset, size_t count)
+{
+	size_t total;
+	ssize_t ret;
+
+	total = 0;
+	do {
+		assert(count >= total);
+		ret = sendfile(out, in, offset, count - total);
+		if (ret < 0)
+			return -1;
+
+		total += count;
+	} while (total < count);
+
+	return 0;
+}
+
 static ssize_t
 getcount(FILE *stream)
 {
@@ -75,7 +94,7 @@ trimfile(int fd, const char *fn, const struct stat *st, off_t offset)
 	if (fchmod(tempfd, st->st_mode))
 		goto ret2;
 
-	if (sendfile(tempfd, fd, &offset, st->st_size - offset) == -1)
+	if (sendfileall(tempfd, fd, &offset, st->st_size - offset) == -1)
 		goto ret2;
 	if (renameat(AT_FDCWD, tempfn, current, fn))
 		goto ret2;
@@ -112,7 +131,7 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 
 	off = 0;
 	infd = fileno(instream);
-	if (sendfile(outfd, infd, &off, count) == -1)
+	if (sendfileall(outfd, infd, &off, count) == -1)
 		goto ret1;
 	if (trimfile(infd, fn, st, count) == -1)
 		goto ret1;
