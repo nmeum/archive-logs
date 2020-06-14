@@ -7,7 +7,7 @@ compare_dirs() {
 }
 
 run_test() {
-	"${ARCHIVE_LOGS}" ./current ./archive
+	"${ARCHIVE_LOGS}" "$@" ./current ./archive
 	if [ $? -ne 0 ]; then
 		printf "FAIL: archive-logs failed\n"
 		exit 1

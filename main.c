@@ -16,6 +16,7 @@
 static int current;
 static int archive;
 static char *basefp;
+static float keep = 0.5;
 
 enum {
 	MAXFD = 256,
@@ -34,8 +35,7 @@ getcount(FILE *stream)
 			lines++;
 	rewind(stream);
 
-	/* TODO: make percentage configurable */
-	lines = lines - (lines * 0.5);
+	lines = lines - (lines * keep);
 	count = 0;
 
 	while (lines > 0) {
@@ -146,20 +146,45 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	return 0;
 }
 
+static void
+usage(char *prog)
+{
+	char *usage = "[-k PERCENTAGE] LOGS_CURRENT LOGS_ARCHIVE";
+
+	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
+	exit(EXIT_FAILURE);
+}
+
 int
 main(int argc, char **argv)
 {
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s LOGS_CURRENT LOGS_ARCHIVE\n", basename(argv[0]));
-		return EXIT_FAILURE;
+	unsigned long num;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "k:")) != -1) {
+		switch (opt) {
+		case 'k':
+			if (!(num = strtoul(optarg, (char **)NULL, 10)))
+				err(EXIT_FAILURE, "strtol failed");
+			else if (num > 100 || num <= 0)
+				errx(EXIT_FAILURE, "invalid percentage");
+
+			keep = num * 0.01;
+			break;
+		default:
+			usage(argv[0]);
+		}
 	}
 
-	if ((current = open(argv[1], O_RDONLY)) == -1)
+	if (argc <= 2 || optind >= argc)
+		usage(argv[0]);
+
+	basefp = argv[optind++];
+	if ((current = open(basefp, O_RDONLY)) == -1)
 		err(EXIT_FAILURE, "couldn't open current");
-	if ((archive = open(argv[2], O_RDONLY)) == -1)
+	if ((archive = open(argv[optind], O_RDONLY)) == -1)
 		err(EXIT_FAILURE, "couldn't open archive");
 
-	basefp = argv[1];
 	if (nftw(basefp, walkfn, MAXFD, FTW_PHYS|FTW_CHDIR))
 		errx(EXIT_FAILURE, "nftw failed");
 
