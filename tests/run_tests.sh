@@ -2,7 +2,7 @@
 
 cd "${0%/*}"
 
-export ARCHIVE_LOGS="${ARCHIVE_LOGS:-$(pwd)/../main}"
+export ARCHIVE_LOGS="${ARCHIVE_LOGS:-$(pwd)/../archive-logs}"
 if [ ! -x "${ARCHIVE_LOGS}" ]; then
 	printf "'%s' does not exist\n" "${ARCHIVE_LOGS}" 1>&2
 	exit 1

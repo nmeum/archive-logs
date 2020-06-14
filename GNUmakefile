@@ -4,4 +4,4 @@ CFLAGS += -Wpedantic -Wall -Wextra \
 	      -Wmissing-prototypes -Wpointer-arith \
 	      -Wstrict-prototypes -Wshadow -Wformat-nonliteral
 
-main: main.c
+archive-logs: archive-logs.c
