@@ -1,3 +1,8 @@
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+MANDIR ?= $(PREFIX)/share/man
+DOCDIR ?= $(PREFIX)/share/doc/$(NAME)
+
 CFLAGS ?= -O0 -g -Werror
 CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500
 CFLAGS += -Wpedantic -Wall -Wextra \
@@ -14,4 +19,9 @@ archive-logs: archive-logs.c $(HEADERS)
 check: archive-logs
 	@./tests/run_tests.sh
 
-.PHONY: check
+install: archive-logs archive-logs.1 README.md
+	install -Dm755 archive-logs "$(DESTDIR)$(BINDIR)/archive-logs"
+	install -Dm644 archive-logs.1 "$(DESTDIR)$(MANDIR)/man1/archive-logs"
+	install -Dm644 README.md "$(DESTDIR)$(DOCDIR)/README.md"
+
+.PHONY: check install
