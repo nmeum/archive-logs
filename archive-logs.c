@@ -178,8 +178,10 @@ main(int argc, char **argv)
 
 	if (argc <= 2 || optind >= argc)
 		usage(argv[0]);
-
 	basefp = argv[optind++];
+
+	/* Can't use O_SEARCH as glibc doesn't support it.
+	 * See: https://sourceware.org/bugzilla/show_bug.cgi?id=18228 */
 	if ((current = open(basefp, O_RDONLY)) == -1)
 		err(EXIT_FAILURE, "couldn't open current");
 	if ((archive = open(argv[optind], O_RDONLY)) == -1)
