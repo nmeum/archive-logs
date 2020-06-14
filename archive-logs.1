@@ -1,0 +1,36 @@
+.Dd $Mdocdate: June 14 2020 $
+.Dt ARCHIVE-LOGS 1
+.Os
+.Sh NAME
+.Nm archive-logs
+.Nd archive newline separated log files
+.Sh SYNOPSIS
+.Nm archive-logs
+.Op Fl p Ar percentage
+.Ar current
+.Ar archive
+.Sh DESCRIPTION
+The
+.Nm
+utility copies newline separated log data from a
+.Ar current
+logging directory to an
+.Ar archive
+directory.
+The utility iterates over all regular files in the current directory.
+A configurable percentage of lines is retained in the iterated files.
+The remaining lines are appended to equally named files in the archive and
+erased from the files in the current directory.
+This property allows iteratively invoking the utility on the same pair
+of directories.
+.Pp
+The utility operates under two central assumptions.
+First, it is assumed that no other program access any files in the given
+directories while
+.Nm
+is running.
+Second, the utility assumes that log files are appended.
+Based on the later assumption only older log file entries are copied to
+the archive while more recent entries are retained.
+.Sh EXIT STATUS
+.Ex -std archive-logs
