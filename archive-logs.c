@@ -22,7 +22,7 @@
 
 static regex_t reg;
 static bool eflag;
-static float keep = 0.5;
+static double keep = 0.5;
 
 static int current;
 static int archive;
@@ -206,7 +206,7 @@ main(int argc, char **argv)
 			else if (num > 100 || num <= 0)
 				errx(EXIT_FAILURE, "invalid percentage");
 
-			keep = num * 0.01;
+			keep = (double)num * 0.01;
 			break;
 		default:
 			usage(argv[0]);
