@@ -13,6 +13,10 @@ If the system call is not available, a compact function will be used.
 This function can be activated by compiling with `HAVE_SENDFILE=0`
 (the default). Disclaimer: The compat function is less well tested.
 
+Afterwards, the software can be installed globally using:
+
+	make install
+
 ## License
 
 This program is free software: you can redistribute it and/or modify it
