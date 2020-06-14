@@ -9,6 +9,9 @@ sendfile(int out, int in, off_t *offset, size_t count)
 	ssize_t rw, rr;
 	size_t c, max, written;
 
+	/* XXX: Technically, sendfile should not modify the file offset if
+	 * offset is not NULL, this implementation ignore this requirement. */
+
 	if (offset) {
 		start = *offset;
 		if (lseek(in, start, SEEK_SET) == -1)
