@@ -2,6 +2,26 @@
 
 Iteratively archive newline separated log files.
 
+## Usage Example
+
+Consider the file `/var/log/messages` with the following content:
+
+	Jun  2 10:27:05 somehost syslog.info syslogd exiting
+	Jun  2 10:28:05 somehost syslog.info syslogd started
+
+Running `archive-logs -k 50 /var/log /mnt/nfs/archive/logs` will
+cause 50% of the data in `/var/log/messages` to be retained and the
+other 50% to be archived in `/mnt/nfs/archive`. The utility will only
+archive old data. As such, a file called `/mnt/nfs/archive/messages`
+will exist after the invocation with the following content:
+
+	Jun  2 10:27:05 somehost syslog.info syslogd exiting
+
+The existing log file `/var/log/messages` will be truncated to only
+store recent data, i.e. its content will looks as follows:
+
+	Jun  2 10:27:05 somehost syslog.info syslogd exiting
+
 ## Installation
 
 The program makes use of the linux `sendfile(2)` system call, if this
