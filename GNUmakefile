@@ -5,3 +5,7 @@ CFLAGS += -Wpedantic -Wall -Wextra \
 	      -Wstrict-prototypes -Wshadow -Wformat-nonliteral
 
 archive-logs: archive-logs.c
+check: archive-logs
+	@./tests/run_tests.sh
+
+.PHONY: check
