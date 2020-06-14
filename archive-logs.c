@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <ftw.h>
 #include <libgen.h>
+#include <regex.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,10 +15,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+static regex_t reg;
+static bool eflag;
+static float keep = 0.5;
+
 static int current;
 static int archive;
 static char *basefp;
-static float keep = 0.5;
 
 enum {
 	MAXFD = 256,
@@ -134,6 +139,9 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	if (*fn == '/')
 		fn++;
 
+	if (eflag && !regexec(&reg, fn, 0, NULL, 0))
+		return 0;
+
 	if ((fd = openat(current, fn, O_RDWR)) == -1)
 		err(EXIT_FAILURE, "openat failed");
 	if (!(stream = fdopen(fd, "r+")))
@@ -149,7 +157,7 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 static void
 usage(char *prog)
 {
-	char *usage = "[-k PERCENTAGE] LOGS_CURRENT LOGS_ARCHIVE";
+	char *usage = "[-e REGEX] [-k PERCENTAGE] LOGS_CURRENT LOGS_ARCHIVE";
 
 	fprintf(stderr, "USAGE: %s %s\n", basename(prog), usage);
 	exit(EXIT_FAILURE);
@@ -161,8 +169,13 @@ main(int argc, char **argv)
 	unsigned long num;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "k:")) != -1) {
+	while ((opt = getopt(argc, argv, "e:k:")) != -1) {
 		switch (opt) {
+		case 'e':
+			eflag = true;
+			if (regcomp(&reg, optarg, REG_EXTENDED|REG_NOSUB))
+				errx(EXIT_FAILURE, "invalid regex");
+			break;
 		case 'k':
 			if (!(num = strtoul(optarg, (char **)NULL, 10)))
 				err(EXIT_FAILURE, "strtol failed");
