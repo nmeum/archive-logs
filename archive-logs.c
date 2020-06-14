@@ -11,9 +11,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifdef HAVE_SENDFILE
+#include <sys/sendfile.h>
+#else
+#include "compat/sendfile.h"
+#endif
 
 static regex_t reg;
 static bool eflag;

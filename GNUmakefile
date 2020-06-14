@@ -4,7 +4,13 @@ CFLAGS += -Wpedantic -Wall -Wextra \
 	      -Wmissing-prototypes -Wpointer-arith \
 	      -Wstrict-prototypes -Wshadow -Wformat-nonliteral
 
-archive-logs: archive-logs.c
+ifeq ($(HAVE_SENDFILE),1)
+	CPPFLAGS += -DHAVE_SENDFILE
+else
+	HEADERS = compat/sendfile.h
+endif
+
+archive-logs: archive-logs.c $(HEADERS)
 check: archive-logs
 	@./tests/run_tests.sh
 
