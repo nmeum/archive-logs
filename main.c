@@ -53,7 +53,7 @@ getcount(FILE *stream)
 }
 
 static int
-rtruncate(int fd, const char *fn, const struct stat *st, off_t offset)
+trimfile(int fd, const char *fn, const struct stat *st, off_t offset)
 {
 	char tempfn[] = ".archive-logsXXXXXX";
 	int r, tempfd;
@@ -104,7 +104,7 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	infd = fileno(instream);
 	if (sendfile(outfd, infd, &off, count) == -1)
 		goto ret1;
-	if (rtruncate(infd, fn, st, count) == -1)
+	if (trimfile(infd, fn, st, count) == -1)
 		goto ret1;
 
 	r = 0;
