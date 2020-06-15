@@ -1,7 +1,7 @@
 #!/bin/sh
 . "${0%/*}/common.sh"
 
-for dir in current* archive*; do
+for dir in current current-expected archive-expected; do
 	mkdir -p "${dir}/subdir"
 done
 

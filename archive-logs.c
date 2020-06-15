@@ -155,12 +155,10 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 	FILE *stream;
 	const char *fn;
 
-	(void)ftw;
-
 	if (!strcmp(fp, "."))
 		return 0;
-	if (flags != FTW_F)
-		return 0;
+	if (ftw->level == 0)
+		return 0; /* skip base directory itself */
 
 	/* Convert potentially absolute path to a path relative to basefp */
 	assert(strlen(fp) > strlen(basefp));
@@ -170,6 +168,14 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 
 	if (eflag && !regexec(&reg, fn, 0, NULL, 0))
 		return 0;
+
+	if (flags == FTW_D) {
+		if (mkdirat(archive, fn, st->st_mode))
+			err(EXIT_FAILURE, "mkdirat failed");
+		return 0;
+	} else if (flags != FTW_F) {
+		return 0;
+	}
 
 	if ((fd = openat(current, fn, O_RDWR)) == -1)
 		err(EXIT_FAILURE, "openat failed");
