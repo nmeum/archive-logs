@@ -219,9 +219,9 @@ main(int argc, char **argv)
 
 	/* Can't use O_SEARCH as glibc doesn't support it.
 	 * See: https://sourceware.org/bugzilla/show_bug.cgi?id=18228 */
-	if ((current = open(basefp, O_RDONLY)) == -1)
+	if ((current = open(basefp, O_RDONLY|O_DIRECTORY)) == -1)
 		err(EXIT_FAILURE, "couldn't open current");
-	if ((archive = open(argv[optind], O_RDONLY)) == -1)
+	if ((archive = open(argv[optind], O_RDONLY|O_DIRECTORY)) == -1)
 		err(EXIT_FAILURE, "couldn't open archive");
 
 	if (nftw(basefp, walkfn, MAXFD, FTW_PHYS|FTW_CHDIR))
