@@ -230,5 +230,6 @@ main(int argc, char **argv)
 	close(current);
 	close(archive);
 
+	if (eflag) regfree(&reg);
 	return EXIT_SUCCESS;
 }
