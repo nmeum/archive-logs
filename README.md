@@ -20,7 +20,7 @@ will exist after the invocation with the following content:
 The existing log file `/var/log/messages` will be truncated to only
 store recent data, i.e. its content will looks as follows:
 
-	Jun  2 10:27:05 somehost syslog.info syslogd exiting
+	Jun  2 10:28:05 somehost syslog.info syslogd started
 
 ## Installation
 
