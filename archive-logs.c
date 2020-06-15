@@ -119,8 +119,13 @@ arfile(FILE *instream, const char *fn, const struct stat *st)
 	r = -1;
 
 	/* Calculate amount of bytes to archive */
-	if ((count = getcount(instream)) == -1)
+	count = getcount(instream);
+	if (count == -1) {
 		goto ret0;
+	} else if (count == 0) { /* no data to archive */
+		r = 0;
+		goto ret0;
+	}
 
 	/* Can't use O_APPEND as it is not supported by sendfile, we
 	 * "emulate" it by seeking to the end of file after openat. */
