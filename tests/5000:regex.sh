@@ -25,5 +25,5 @@ cat >archive-expected/file1 <<-EOF
 EOF
 
 archive_logs -e "file[2-3]"
-rm current/file2 current/file3
+rm current/file2 current/file3 </dev/null
 check_dirs

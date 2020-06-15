@@ -26,5 +26,5 @@ cat >archive-expected/file1 <<-EOF
 EOF
 
 archive_logs -e "ignored.*"
-rm -r current/ignored
+rm -r current/ignored </dev/null
 check_dirs
