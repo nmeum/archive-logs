@@ -29,7 +29,7 @@ system call is available compile the software using:
 
 	make HAVE_SENDFILE=1
 
-If the system call is not available, a compact function will be used.
+If the system call is not available, a compat function will be used.
 This function can be activated by compiling with `HAVE_SENDFILE=0`
 (the default). Disclaimer: The compat function is less well tested.
 
