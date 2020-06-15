@@ -2,6 +2,11 @@
 
 Iteratively archive newline separated log files.
 
+## Status
+
+I actively use this software for archiving [hii][hii github] chat logs.
+For this purpose it currently works entirely fine as is.
+
 ## Usage Example
 
 Consider the file `/var/log/messages` with the following content:
@@ -51,3 +56,5 @@ Public License for more details.
 
 You should have received a copy of the GNU General Public License along
 with this program. If not, see <http://www.gnu.org/licenses/>.
+
+[hii github]: https://github.com/nmeum/hii
