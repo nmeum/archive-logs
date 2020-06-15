@@ -170,7 +170,7 @@ walkfn(const char *fp, const struct stat *st, int flags, struct FTW *ftw)
 		return 0;
 
 	if (flags == FTW_D) {
-		if (mkdirat(archive, fn, st->st_mode))
+		if (mkdirat(archive, fn, st->st_mode) && errno != EEXIST)
 			err(EXIT_FAILURE, "mkdirat failed");
 		return 0;
 	} else if (flags != FTW_F) {
