@@ -19,6 +19,7 @@ else
 endif
 
 archive-logs: archive-logs.c $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $< -o $@
 check: archive-logs
 	@./tests/run_tests.sh
 
