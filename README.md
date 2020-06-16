@@ -29,16 +29,20 @@ store recent data, i.e. its content will looks as follows:
 
 ## Installation
 
-The program makes use of the linux `sendfile(2)` system call, if this
-system call is available compile the software using:
+The software can be compiled using:
 
-	make HAVE_SENDFILE=1
+	make
 
-If the system call is not available, a compat function will be used.
-This function can be activated by compiling with `HAVE_SENDFILE=0`
-(the default). Disclaimer: The compat function is less well tested.
+The software makes heavy use of the Linux `sendfile(2)` system call. If
+this system call is available it is highly desirable to compile with
+`HAVE_SENDFILE=1`. By default a compatibility function is used which
+emulates the sendfile system call in userland.
 
-Afterwards, the software can be installed globally using:
+After compilation, tests can be run using:
+
+	make check
+
+The software can be installed globally using:
 
 	make install
 
