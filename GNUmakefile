@@ -25,7 +25,7 @@ check: archive-logs
 
 install: archive-logs archive-logs.1 README.md
 	install -Dm755 archive-logs "$(DESTDIR)$(BINDIR)/archive-logs"
-	install -Dm644 archive-logs.1 "$(DESTDIR)$(MANDIR)/man1/archive-logs"
+	install -Dm644 archive-logs.1 "$(DESTDIR)$(MANDIR)/man1/archive-logs.1"
 	install -Dm644 README.md "$(DESTDIR)$(DOCDIR)/README.md"
 
 .PHONY: check install
