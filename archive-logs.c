@@ -212,9 +212,11 @@ main(int argc, char **argv)
 				errx(EXIT_FAILURE, "invalid regex");
 			break;
 		case 'k':
-			if (!(num = strtoul(optarg, (char **)NULL, 10)))
+			errno = 0;
+			num = strtoul(optarg, (char **)NULL, 10);
+			if (num == 0 && errno != 0)
 				err(EXIT_FAILURE, "strtol failed");
-			else if (num > 100 || num <= 0)
+			else if (num > 100)
 				errx(EXIT_FAILURE, "invalid percentage");
 
 			keep = (double)num * 0.01;
