@@ -224,7 +224,7 @@ main(int argc, char **argv)
 			errno = 0;
 			num = strtoul(optarg, (char **)NULL, 10);
 			if (num == 0 && errno != 0)
-				err(EXIT_FAILURE, "strtol failed");
+				err(EXIT_FAILURE, "strtoul failed");
 			else if (num > 100)
 				errx(EXIT_FAILURE, "invalid percentage");
 
