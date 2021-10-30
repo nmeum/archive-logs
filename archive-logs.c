@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -57,6 +58,14 @@ getcount(FILE *stream)
 	int ch;
 	ssize_t count;
 	size_t lines;
+	struct stat st;
+
+	if (keep == 0) { /* keep zero percent → copy everything */
+		if (fstat(fileno(stream), &st) == -1)
+			return -1;
+		assert(st.st_size >= 0 && st.st_size <= SSIZE_MAX);
+		return (ssize_t)st.st_size;
+	}
 
 	lines = 0;
 	while ((ch = getc(stream)) != EOF)
