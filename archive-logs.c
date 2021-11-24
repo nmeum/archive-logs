@@ -33,6 +33,12 @@ enum {
 	MAXFD = 256,
 };
 
+/* TODO: Consider using copy_file_range(2) instead of sendfile(2)?
+ *
+ * See:
+ *  * https://dev.to/albertzeyer/difference-of-ficlone-vs-ficlonerange-vs-copyfilerange-for-copy-on-write-support-41lm
+ *  * https://github.com/golang/go/issues/36817
+ */
 static int
 sendfileall(int out, int in, off_t *offset, size_t count)
 {
@@ -52,6 +58,8 @@ sendfileall(int out, int in, off_t *offset, size_t count)
 	return 0;
 }
 
+/* TODO: Evaluate if this is significantly faster with mmap(2)
+ * and the posix_fadvise(2) POSIX_FADV_WILLNEED flag. */
 static ssize_t
 getcount(FILE *stream)
 {
@@ -90,6 +98,12 @@ getcount(FILE *stream)
 	return count;
 }
 
+/* TODO: Consider using fsync
+ *
+ * See:
+ *  * https://github.com/google/renameio/issues/11
+ *  * https://github.com/martanne/vis/blob/b3bec56d86f602da418763d3521aad87d5eb6b25/text.c#L901-L935
+ */
 static int
 trimfile(int fd, const char *fn, const struct stat *st, off_t offset)
 {
